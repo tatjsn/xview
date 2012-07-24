@@ -1,0 +1,24 @@
+<html>
+<head>
+<script type="text/javascript" src="mustache.js"></script>
+<script>
+window.onload = function() {
+     var req = new XMLHttpRequest();
+     req.open('GET', 'templates/index.html', false);
+     req.send(null);
+     var file = req.responseText.split("\n");
+     var out = file.map(function(line) {
+             return line.replace(/<\?php \$this->prn\(\$d\[\'(\w+)\'\]\); \?>/, "{{&$1}}");
+         });
+     var templ = out.join("\n");
+     var view = {"title": "Hello World!",
+                 "widget": "<button>click me!</button>"};
+     document.body.parentNode.innerHTML = Mustache.render(templ, view); // TODO: write into iframe src
+}
+</script>
+<title></title>
+</head>
+<body>
+loading...
+</body>
+</html>
