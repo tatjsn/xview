@@ -2,18 +2,31 @@
 <head>
 <script type="text/javascript" src="mustache.js"></script>
 <script>
+var re_prn = /<\?php \$this->prn\(\$d\[\'(\w+)\'\]\); \?>/g;
+
+function load_file(in_type, in_name)
+{
+    var req = new XMLHttpRequest();
+    req.open("GET", in_type + "/" + in_name + ".html", false);
+    req.send(null);
+    return req.responseText;
+}
+
+function php_to_mus(in_text)
+{
+    var file = in_text.split("\n");
+    var out = file.map(function(line) {
+        // TODO: line.match();
+        return line.replace(re_prn, "{{&$1}}");
+    });
+    return out.join("\n");
+}
+
 window.onload = function() {
-     var req = new XMLHttpRequest();
-     req.open('GET', 'templates/index.html', false);
-     req.send(null);
-     var file = req.responseText.split("\n");
-     var out = file.map(function(line) {
-             return line.replace(/<\?php \$this->prn\(\$d\[\'(\w+)\'\]\); \?>/, "{{&$1}}");
-         });
-     var templ = out.join("\n");
-     var view = {"title": "Hello World!",
-                 "widget": "<button>click me!</button>"};
-     document.body.parentNode.innerHTML = Mustache.render(templ, view); // TODO: write into iframe src
+    var mus = php_to_mus(load_file("templates", "index"));
+    var view = {"title": "Hello World!",
+                "widget": "<button>click me!</button>"};
+    document.body.parentNode.innerHTML = Mustache.render(mus, view); // TODO: write into iframe src
 }
 </script>
 <title></title>
