@@ -22,11 +22,53 @@ function php_to_mus(in_text)
     return out.join("\n");
 }
 
+function create_module_func(in_module, in_view)
+{
+    return function() {
+        for (var key in in_view) {
+            if (Object.prototype.toString.call(in_view[key]) === "[object Object]") {
+                in_view[key] = create_module_func(in_view[key]["module"], in_view[key]["data"]);
+            }
+        }
+        var mus = php_to_mus(load_file("module-templates", in_module));
+        return Mustache.render(mus, in_view);
+    }
+}
+
+// TODO: remove this
+function create_template_func(in_template, in_view)
+{
+    return function() {
+        for (var key in in_view) {
+            if (Object.prototype.toString.call(in_view[key]) === "[object Object]") {
+                in_view[key] = create_module_func(in_view[key]["module"], in_view[key]["data"]);
+            }
+        }
+        var mus = php_to_mus(load_file("templates", in_template));
+        return Mustache.render(mus, in_view);
+    }
+}
+
+var view = {
+    "title": "Hello World!",
+    "widget": {
+        "module": "button",
+        "data": {
+            "width": 300,
+            "height": 200,
+            "logo": {
+                "module": "logo",
+                "data": {
+                    "text": 1234
+                }
+            }
+        }
+    }
+};
+
 window.onload = function() {
-    var mus = php_to_mus(load_file("templates", "index"));
-    var view = {"title": "Hello World!",
-                "widget": "<button>click me!</button>"};
-    document.body.parentNode.innerHTML = Mustache.render(mus, view); // TODO: write into iframe src
+    // TODO: write into iframe
+    document.body.parentNode.innerHTML = create_template_func("index", view)();
 }
 </script>
 <title></title>
